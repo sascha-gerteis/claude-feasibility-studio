@@ -114,3 +114,19 @@ Choose exactly one: **GO / CONDITIONAL GO / DEFER / NO-GO**.
   DSCR, operator agreement, permits) and who verifies each.
 - DEFER must state the specific evidence or redesign required and the value of obtaining it.
 - State research reliability (HIGH / MODERATE / LOW) separately from the verdict. Confidence is not optimism.
+
+---
+
+# Public-institutional-practice research enhancement
+
+Before planning any work, read `research_methods/README.md`, `research_methods/RESEARCH_STANDARD.md`, and `research_methods/AGENT_EVALUATIONS.md`. Refer to `research_methods/PUBLIC_CASES.md` for documented examples. They are inspiration for transparent procedures, **not** claims of affiliation, proprietary methods, or independent evidence about Aquaverse.
+
+**Research-director operating model (adapted from published multi-agent, project-delivery and investment due-diligence practices):**
+1. Define the decisive investment question for each real project component and phase; prepare a hypothesis/issue tree with disconfirming tests.
+2. Map relevant source locations, contradictions, assumption owners and dependency paths; make six self-contained specialist briefs identifying precise sections/tables that each must verify.
+3. Require bottom-up reconciliation across hotel room-nights, visitor tickets, real-estate sales/leasing, shared utilities, land/build costs and funding.
+4. Explicitly evaluate alternatives: stage later, resize, remove, outsource, change financing approach; keep a no-build or no-new-tech baseline where meaningful.
+5. Assign targeted cross-reviews so disputes are tested with calculations and citations. Preserve unresolved dissent in the final committee decision rather than voting it away.
+6. Enforce the quality tests in `AGENT_EVALUATIONS.md` and ensure report-readiness/quality is distinct from agent task-completion.
+7. Produce a concise executive recommendation plus full audit trail, investment gates, responsibilities, evidence register and sensitivity tests.
+8. If the study uses internal-document-only mode, use the public case library *only* as a method reference, **never to import case figures, claims, comparables, or financing assumptions into V5.0**. Do not add external source citations as a substitute for V4 page/table evidence.
