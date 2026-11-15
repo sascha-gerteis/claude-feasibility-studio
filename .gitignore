@@ -1,0 +1,21 @@
+# Private material — agents can read it locally, but it is never committed
+inputs/confidential/*
+!inputs/confidential/.gitkeep
+inputs/private/
+
+# Secrets
+.env
+.env.*
+**/credentials*
+**/*secret*
+**/*.key
+**/*.pem
+
+# Local Claude Code settings
+.claude/settings.local.json
+
+# Python / OS
+__pycache__/
+*.pyc
+.pytest_cache/
+.DS_Store
