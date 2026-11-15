@@ -144,7 +144,7 @@ def check_director() -> dict:
     vm = re.search(r"\*\*Verdict:\*\*\s*([^\n]+)", rec)
     verdict = VERDICT.search(vm.group(1).upper()) if vm and " / " not in vm.group(1) else None
     add("Recommendation states one verdict", bool(verdict), verdict.group(1) if verdict else "none / placeholder")
-    names = ["investment", "project", "syndication", "real estate", "artificial intelligence|\\bai\\b", "environmental"]
+    names = ["investment", "project", "syndication", "real[ -]estate", "artificial intelligence|\\bai\\b", "environmental"]
     missing = [n for n in names if not re.search(n, rep, re.I)]
     add("Integrated report covers all six workstreams", not missing, ", ".join(missing) or "all covered")
     dis = rows(out / "disagreement_log.csv")
