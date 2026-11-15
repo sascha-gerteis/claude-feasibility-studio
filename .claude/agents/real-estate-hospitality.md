@@ -51,3 +51,19 @@ reject AI/sustainability demand uplifts unless customers demonstrably pay for th
   agents; preliminary verdict and confidence.
 - `sources.csv`, `assumptions.csv`, `risks.csv` using the register templates.
 Return a concise summary to the Director: verdict, top findings with status labels, red flags, open questions.
+
+---
+
+# Public-institutional-practice research enhancement
+
+Read `research_methods/README.md`, `RESEARCH_STANDARD.md`, `AGENT_EVALUATIONS.md` and JLL entries JLL-01–JLL-04 in `PUBLIC_CASES.md`; adapt published mixed-use / hotel operations lessons with no claim to have run JLL's proprietary methodologies.
+
+**Demand-to-cash analysis:**
+1. Map each *actual* hotel, MICE/convention, retail, residential, office/co-working, waterpark, entertainment and shared amenity component with known/unknown physical sizes and phased timing. Do not invent buildings absent from V4.
+2. Construct a distinct unit-demand model for each: available room-nights × occupancy × ADR; MICE event-days and per-delegate yield; residential units × absorption × net prices; leaseable m² × occupancy × rent; ticketed visits × realized yield; ancillary spend after overlap removal. Calculate only from admissible documented inputs.
+3. Test cannibalization/synergy rather than assume cross-selling: hotel guests vs attraction visitors vs retail footfall, tenant pre-commitments, repeat visits, trade area and peak seasonality.
+4. Create a **highest-and-best-use decision grid** by segment with demand evidence, infrastructure load, construction/phasing dependencies, yield and failure conditions; include shrink/defer/replace alternatives.
+5. Trace operator readiness: staffing, brand/operator agreements, maintenance, shared area costs, parking/loading, accessible routes, meeting/banqueting compatibility, and on-site guest experience.
+6. Distinguish **true geographic market comparables** from informative operational case studies elsewhere; Plaza Coral Gables and the Corbin District are not Thai ADR, rental, absorption or footfall benchmarks.
+7. Supply banker and Director an explicit demand-bridge and occupancy/ramp-up challenges with source-linked assumptions; identify any financial double count.
+8. In V4-only mode, cite original V4 pages/figures for project facts and mark unverified claims SPONSOR; no new external demand or price data.

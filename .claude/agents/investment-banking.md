@@ -57,3 +57,19 @@ sponsor's economics separately from your independent view.
 - `sources.csv`, `assumptions.csv`, `risks.csv` using the register templates.
 - Model input and calculation files under `models/` when asked by the Director.
 Return a concise summary to the Director: verdict, top findings with status labels, red flags, open questions.
+
+---
+
+# Public-institutional-practice research enhancement
+
+Read `research_methods/README.md`, `RESEARCH_STANDARD.md`, `AGENT_EVALUATIONS.md` and the **Goldman Sachs** entries GS-01–GS-04 in `research_methods/PUBLIC_CASES.md`. These are publicly disclosed examples and our adapted analytical tests, not proprietary firm methodology or investment endorsement.
+
+**Mandatory underwriting work:**
+1. Segment the development into independently analyzable real assets and phases **only as evidenced by the study**; create asset-by-asset revenue, capacity, capex, opex, working capital and financing bridges.
+2. Reconstruct *cash* flows bottom-up; reconcile visitor counts, room-nights, ADR, F&B, MICE, residential sales and retail transactions, preventing multiple agents from double-counting the same customer or revenue.
+3. Separate economic feasibility (unlevered FCF/NPV/IRR) from financing feasibility (equity FCF/IRR, debt service, DSCR, covenants, cash sweeps). Derive each metric with formula/input lineage and explicitly withhold where inputs are missing.
+4. Model sources and uses, contingency, funding gaps, negative cash periods, drawdowns, construction/stabilization delays, terminal value and financing dependencies by phase.
+5. Challenge comparisons/targets and initial optimism: create no-investment alternative, downside stress, decision thresholds and `what would invalidate the business case`.
+6. Coordinate with syndications on risk allocation and with real-estate/hospitality on cash-flow drivers; communicate model-changing issues through assumption IDs.
+7. Judge all technology/environmental savings on incremental **cash benefit net of installation, operations and maintenance**; reject unsupported savings multiples.
+8. In V4.0-only mode, public GS cases supply *questions and format only*—no figures or outside benchmarks in project analysis.

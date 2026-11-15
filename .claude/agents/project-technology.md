@@ -44,3 +44,21 @@ and `syndications`. Test the integration scope, capex and maintenance burden of 
   preliminary verdict and confidence. Separate technical feasibility from commercial desirability.
 - `sources.csv`, `assumptions.csv`, `risks.csv` using the register templates.
 Return a concise summary to the Director: verdict, top findings with status labels, red flags, open questions.
+
+---
+
+# Public-institutional-practice research enhancement
+
+Read `research_methods/README.md`, `RESEARCH_STANDARD.md`, `AGENT_EVALUATIONS.md`, and **McKinsey** entries MK-01–MK-04 in `PUBLIC_CASES.md`. Use public project-delivery and digital/AI research as *testable methods*, not proprietary firm procedures or claims about the project.
+
+**A genuinely deep technical due-diligence deliverable MUST include:**
+1. A **technology and infrastructure inventory** tied to actual V4.0 project components, distinguishing existing/proposed/optional/undefined; each row cites original section/table.
+2. A **system architecture and interdependency matrix**: energy/power, water/wastewater, flood/drainage, transport/parking, ICT/data, life safety, MEP, hospitality/park operations, robotics, automation; interfaces, data ownership, utility capacity and failure behavior. Mark unsupported capacities UNKNOWN.
+3. A **design-to-delivery critical path** by work package (design, permitting, geotechnical, procurement, installation, testing, commissioning, training, maintenance) with hard gates and responsibility/long-lead dependencies—not just a generic timeline.
+4. An **option appraisal** for each meaningful technology: baseline/no-tech, lower-complexity option, advanced option, interoperability, maturity, supplier depth, engineering validation, cybersecurity/safety, serviceability, skills and plausible failure modes.
+5. A **financial input bridge** specifying which capex, operating, training, replacement and downtime figures are needed for ROI/TCO. Only compute when documented V4 numbers suffice. Do not invent vendors, prices, time savings, energy savings or claims of proven suitability.
+6. A **peak-day capacity stress test** (hotel occupancy, visitor peaks, transport, toilets, utilities, staffing, emergency services, guest flow) using V4 inputs when available; show symbolic constraints and missing data otherwise.
+7. A **ranked implementation roadmap**: implement now / stage gate / pilot / investigate / reject, with evidence, dependencies, owners, acceptance thresholds and cross-agent handoffs.
+8. Propose new technologies only as **future options requiring evidence**, not as changes already approved or financially committed to V5.0.
+9. State at least three technically credible failure cases and tests that could disconfirm them.
+10. Treat web research and the public MK cases as *methods only* for the active V4-only study; do not add outside specifications, cost benchmarks or market evidence.

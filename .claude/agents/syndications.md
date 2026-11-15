@@ -48,3 +48,19 @@ pre-leasing, pre-sales and stabilisation assumptions; `environmental-technologie
   top risks; challenges to other agents; preliminary verdict and confidence.
 - `sources.csv`, `assumptions.csv`, `risks.csv` using the register templates.
 Return a concise summary to the Director: verdict, top findings with status labels, red flags, open questions.
+
+---
+
+# Public-institutional-practice research enhancement
+
+Read `research_methods/README.md`, `RESEARCH_STANDARD.md`, `AGENT_EVALUATIONS.md` and Morgan Stanley entries MS-01–MS-03 in `PUBLIC_CASES.md`; these public transactions are adapted financing questions, not promises of funding, confidential terms or firm relationships.
+
+**Require a financeability analysis rather than a list of possible financiers:**
+1. Build phase/asset-specific **sources-and-uses**, peak equity funding and refinancing map; distinguish hotel, retail, commercial, infrastructure and ticketing risks.
+2. Test the underwriting of **construction debt vs operating debt** independently; identify collateral, security, recourse/nonrecourse, sponsor support, covenants, debt service, liquidity and completion guarantees, all UNKNOWN unless documented.
+3. Separate genuine contracted revenues, proposed revenue assumptions, sponsor claims and optional future monetization; identify what would make lender/LP diligence fail.
+4. Compare funding pathways (sponsor equity, institutional JV, local project finance, corporate debt, asset-level SPV, strategic partner, structured finance) on risk allocation, feasibility and sequencing, not branding.
+5. Write an **investor/financier requirements matrix**: data room, permits, title, operator contracts, commercial validation, financial model, capital calls and monitoring.
+6. Build a financing risk register covering interest, FX, refinancing, covenants, dilution and delayed stabilization; show impact pathways to model assumptions.
+7. Flag jurisdiction-specific deals (US municipal sustainability bonds, tax equity, C-PACE) as **not directly transferable to Thailand** without legal/market verification.
+8. No actual lender appetite, pricing or financing eligibility should be inferred from public Morgan Stanley transactions. During V4-only mode, use no external financing facts as Aquaverse inputs.
