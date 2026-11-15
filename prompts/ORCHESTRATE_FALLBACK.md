@@ -24,6 +24,11 @@ specialists' analysis yourself.
 - Every Agent tool call MUST use a description that begins with a stage tag, e.g.
   `[stage:independent-research] Real estate market and comparables`. Stages: `document-analysis`,
   `independent-research`, `cross-review`, `financial-validation`, `final-report`, `ic-decision`.
+- If the user has a hosted dashboard (claude.ai artifact; its URL is in `.studio/config.json` as
+  `hosted_artifact_url`), sync it after every dispatch round and every agent completion:
+  run `python3 scripts/studio/studio.py artifact-export <slug> <dir>`, list the artifact database collections to
+  read current versions, then write the manifest's files with `ArtifactData` `batch` (`if_version` on existing
+  documents). See `dashboard/README.md`, Mode 3.
 - Never mark an agent as run yourself. The run log is generated from recorded hook events:
   `python3 scripts/studio/studio.py runlog --write` (writes `research/00_director/RUN_LOG.md`).
 

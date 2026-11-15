@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import type { StudyState } from "../../../shared/types";
-import { api } from "./api";
+import { HOSTED, api, hostedDocIds } from "./api";
+import { type HostedState, subscribeStudy } from "./artifactdb";
 
 export type StreamState = "connecting" | "connected" | "disconnected";
 
@@ -34,6 +35,19 @@ export function useStudy(slug: string | undefined) {
 
   useEffect(() => {
     setState(null);
+    if (HOSTED) {
+      if (!slug) return;
+      setStream("connecting");
+      return subscribeStudy(slug, (s: HostedState) => {
+        if (s.__docIds) hostedDocIds[slug] = s.__docIds;
+        setState(s);
+        setError(null);
+        setLoadedAt(new Date().toISOString());
+      }, (connected, err) => {
+        setStream(connected ? "connected" : "disconnected");
+        if (err) setError(err);
+      });
+    }
     void load();
     if (!slug || typeof EventSource === "undefined") { setStream("disconnected"); return; }
     setStream("connecting");

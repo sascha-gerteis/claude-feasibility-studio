@@ -18,7 +18,8 @@
     "user": "node --disable-warning=ExperimentalWarning server/dist/server/src/cli.js",
     "test": "vitest run",
     "test:e2e": "node e2e/tour.cjs",
-    "test:hooks": "python3 -I ../scripts/studio/test_hook.py"
+    "test:hooks": "python3 -I ../scripts/studio/test_hook.py",
+    "build:artifact": "node tools/build-artifact.mjs"
   },
   "dependencies": {
     "express": "5.3.0",

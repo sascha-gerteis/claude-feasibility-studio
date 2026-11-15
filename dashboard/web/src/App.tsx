@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react";
-import { BrowserRouter, Link, NavLink, Navigate, Outlet, Route, Routes, matchPath, useLocation, useNavigate, useOutletContext, useParams } from "react-router-dom";
+import { BrowserRouter, Link, MemoryRouter, NavLink, Navigate, Outlet, Route, Routes, matchPath, useLocation, useNavigate, useOutletContext, useParams } from "react-router-dom";
 import type { StudySummary } from "../../shared/types";
 import { DataMode } from "./components/DataMode";
-import { AuthError, api, type Me } from "./lib/api";
+import { AuthError, HOSTED, api, type Me } from "./lib/api";
 import { useStudy } from "./lib/useStudy";
 import { AgentDetailPage } from "./pages/AgentDetail";
 import { CommandCenter } from "./pages/CommandCenter";
@@ -53,7 +53,8 @@ function Shell({ me, studies }: { me: Me; studies: StudySummary[] }) {
                 {me.user.username} · Sign out
               </button>
             )}
-            {!me.authEnabled && <span className="rounded bg-white/10 px-2 py-0.5 text-[11px] text-slate-200" title="Browser authentication is disabled because the server only listens on a loopback address">Local mode</span>}
+            {HOSTED && <span className="rounded bg-white/10 px-2 py-0.5 text-[11px] text-slate-200" title="Hosted as a private claude.ai artifact; access follows the artifact's sharing settings">Private · claude.ai</span>}
+            {!HOSTED && !me.authEnabled && <span className="rounded bg-white/10 px-2 py-0.5 text-[11px] text-slate-200" title="Browser authentication is disabled because the server only listens on a loopback address">Local mode</span>}
           </div>
         </div>
       </header>
@@ -72,6 +73,15 @@ function StudyScope() {
   }
   return (
     <div className="space-y-4">
+      {s.state?.study.kind === "validation" && (
+        <div role="note" className="flex flex-wrap items-center gap-x-3 gap-y-1 rounded-md border-2 border-dashed border-violet-400 bg-violet-50 px-3 py-2 text-sm text-violet-900">
+          <span className="rounded bg-violet-700 px-2 py-0.5 text-xs font-bold tracking-wider text-white">TEST DATA</span>
+          <span>
+            This is a recorded <b>validation run</b> of the agent infrastructure (harmless smoke-test tasks). It contains no
+            feasibility research, no project findings and no investment recommendation.
+          </span>
+        </div>
+      )}
       <DataMode state={s.state} stream={s.stream} loadedAt={s.loadedAt} />
       {s.state ? <Outlet context={{ ...s, slug }} /> : <p className="text-sm text-muted">Loading recorded study data…</p>}
     </div>
@@ -102,12 +112,14 @@ export default function App() {
   };
   useEffect(() => { void refresh(); }, []);
 
-  if (err) return <p className="m-6 rounded border border-rose-300 bg-rose-50 p-4 text-sm text-rose-800">Cannot reach the dashboard server: {err}</p>;
+  if (err) return <p className="m-6 rounded border border-rose-300 bg-rose-50 p-4 text-sm text-rose-800">{HOSTED ? "Cannot load the dashboard data" : "Cannot reach the dashboard server"}: {err}</p>;
   if (needLogin) return <LoginPage onLogin={refresh} />;
   if (!me || !studies) return <p className="m-6 text-sm text-muted">Loading…</p>;
 
+  // Artifact links only carry a plain #name, so the hosted build routes in memory.
+  const Router = HOSTED ? MemoryRouter : BrowserRouter;
   return (
-    <BrowserRouter>
+    <Router>
       <Routes>
         <Route path="/login" element={<Navigate to="/" replace />} />
         <Route element={<Shell me={me} studies={studies} />}>
@@ -121,6 +133,6 @@ export default function App() {
           <Route path="*" element={<Navigate to="/" replace />} />
         </Route>
       </Routes>
-    </BrowserRouter>
+    </Router>
   );
 }

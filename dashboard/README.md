@@ -140,6 +140,32 @@ Kubernetes cluster, and so on.
 With Mode 2, hooks POST every event as it happens, so the hosted dashboard is **live from any browser** while a
 session runs. Every study, its events and every document version persist on the volume.
 
+### Mode 3 — Private hosted page on claude.ai (no hosting account needed)
+The same React app is built as a single page (`npm run build:artifact` → `dist/artifact/command-center.html`) and
+published as a **private claude.ai artifact**. Access is through your claude.ai login: only you, plus anyone you add
+from the page's Share menu, can open it. Its data lives in the artifact's database. The database rules let everyone
+admitted read it and **only the owner write it**, and Claude writes as you through its `ArtifactData` tool.
+
+How updates reach it. The hooks keep recording into the in-session server exactly as in Mode 1. The orchestrating
+Claude session then syncs a snapshot:
+
+```bash
+python3 scripts/studio/studio.py artifact-export <slug> <dir>
+```
+
+This writes one JSON file per database document, plus `manifest.json`. Claude then writes those files with
+`ArtifactData` `batch` (up to 50 writes per batch). Existing documents need their current `version` as `if_version`,
+so list the collections first. The open page re-renders the moment a sync lands; no reload is needed.
+
+What "live" means here. The page is exactly as current as the last sync. Its banner shows **SYNCED · STUDY RUNNING**
+(an orchestration session was open at that sync) or **STORED RECORD**, always with the sync time and the time of the
+last recorded event it covers. Events recorded between syncs appear at the next sync. During a study, the orchestrator
+syncs after every dispatch round and every agent completion. For hook-by-hook real-time viewing from any browser, use
+Mode 2.
+
+Limits: 256 KiB per document (the exporter trims the oldest feed and activity detail first, and splits large reports
+into parts) and 25,000 documents per artifact.
+
 ### Security and access control
 * **Browser authentication:** username/password (scrypt), opaque HttpOnly `SameSite=Strict` session cookie (`Secure`
   by default off loopback), 12-hour sessions stored hashed. Login is rate-limited. Roles are `admin` and `viewer`, and

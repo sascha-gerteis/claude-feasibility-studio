@@ -1,4 +1,10 @@
 import type { CompareRow, DocumentRec, StudioEvent, StudyState, StudySummary } from "../../../shared/types";
+import { hostedCompare, hostedDocument, hostedStudies } from "./artifactdb";
+
+/** True in the hosted build (private claude.ai artifact); false when served by the dashboard server. */
+export const HOSTED = import.meta.env.VITE_TARGET === "artifact";
+/** path -> artifact document id, per study; filled from each synced state. */
+export const hostedDocIds: Record<string, Record<string, string>> = {};
 
 export class AuthError extends Error {}
 
@@ -12,13 +18,14 @@ async function get<T>(url: string): Promise<T> {
 export interface Me { authEnabled: boolean; user: { username: string; role: string } | null; }
 
 export const api = {
-  me: () => get<Me>("/api/auth/me"),
-  studies: () => get<StudySummary[]>("/api/studies"),
+  me: (): Promise<Me> => (HOSTED ? Promise.resolve({ authEnabled: false, user: null }) : get<Me>("/api/auth/me")),
+  studies: () => (HOSTED ? hostedStudies() : get<StudySummary[]>("/api/studies")),
   study: (slug: string) => get<StudyState>(`/api/studies/${encodeURIComponent(slug)}`),
   events: (slug: string) => get<StudioEvent[]>(`/api/studies/${encodeURIComponent(slug)}/events`),
-  document: (slug: string, path: string) =>
-    get<DocumentRec>(`/api/studies/${encodeURIComponent(slug)}/document?path=${encodeURIComponent(path)}`),
-  compare: (slugs: string[]) => get<CompareRow[]>(`/api/compare?studies=${slugs.map(encodeURIComponent).join(",")}`),
+  document: (slug: string, path: string) => (HOSTED ? hostedDocument(slug, path, hostedDocIds[slug]) :
+    get<DocumentRec>(`/api/studies/${encodeURIComponent(slug)}/document?path=${encodeURIComponent(path)}`)),
+  compare: (slugs: string[]) => (HOSTED ? hostedCompare(slugs) :
+    get<CompareRow[]>(`/api/compare?studies=${slugs.map(encodeURIComponent).join(",")}`)),
   login: async (username: string, password: string) => {
     const r = await fetch("/api/auth/login", {
       method: "POST", credentials: "same-origin",
