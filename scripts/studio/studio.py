@@ -205,10 +205,18 @@ def artifact_export(a: argparse.Namespace) -> None:
     state["__sync"] = sync
     state["__docIds"] = doc_ids
     # Keep the state document under the store's per-document limit, trimming the oldest detail first.
-    for feed_n, act_n, excerpt_n in ((400, 150, 600), (250, 80, 300), (150, 40, 200), (80, 20, 120)):
+    def cut_tasks(tasks: list, n: int) -> list:
+        return [{**t, "resultExcerpt": (t.get("resultExcerpt") or "")[:n] or None} for t in tasks]
+
+    for feed_n, act_n, excerpt_n in ((400, 150, 600), (250, 80, 300), (150, 40, 200), (80, 20, 120), (40, 8, 60)):
         trial = dict(state)
         trial["feed"] = state["feed"][:feed_n]
-        trial["agents"] = [{**ag, "activity": ag["activity"][-act_n:]} for ag in state["agents"]]
+        trial["agents"] = [{**ag, "activity": ag["activity"][-act_n:],
+                            "completedTasks": cut_tasks(ag["completedTasks"], excerpt_n),
+                            "failedTasks": cut_tasks(ag["failedTasks"], excerpt_n),
+                            "outstandingTasks": cut_tasks(ag["outstandingTasks"], excerpt_n),
+                            "currentTask": (cut_tasks([ag["currentTask"]], excerpt_n)[0] if ag.get("currentTask") else ag.get("currentTask"))}
+                           for ag in state["agents"]]
         trial["orchestrator"] = {**state["orchestrator"], "activity": state["orchestrator"]["activity"][-min(act_n, 50):]}
         trial["tasks"] = [{**t, "resultExcerpt": (t.get("resultExcerpt") or "")[:excerpt_n] or None} for t in state["tasks"]]
         if len(json.dumps(trial, ensure_ascii=False).encode()) <= limit_doc:
