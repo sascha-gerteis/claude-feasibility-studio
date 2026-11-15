@@ -3,6 +3,7 @@ import { existsSync } from "node:fs";
 import { join } from "node:path";
 import { z } from "zod";
 import { compareRow, deriveStudy } from "../../shared/derive.js";
+import { needsContent } from "../../shared/insights.js";
 import type { StudioEvent, StudyState } from "../../shared/types.js";
 import {
   COOKIE, type AuthOptions, type AuthedRequest, currentUser, login, loginAllowed, logout, readCookie,
@@ -58,7 +59,7 @@ export function studyState(db: DB, slug: string): StudyState | null {
   const study = listStudies(db).find((s) => s.slug === slug);
   if (!study) return null;
   const metas = listDocuments(db, slug);
-  const contents = getDocuments(db, slug, (p) => p.endsWith(".csv") || p === "outputs/04_recommendation.md");
+  const contents = getDocuments(db, slug, needsContent);
   const state = deriveStudy(study, listEvents(db, slug), metas, contents, listAgents(db));
   return { ...state, generatedAt: new Date().toISOString() };
 }
@@ -171,6 +172,17 @@ export function createApp(opts: AppOptions) {
     const doc = getDocuments(db, String(req.params.slug), (p) => p === path)[0];
     if (!doc) return res.status(404).json({ error: "document not found" });
     res.json(doc);
+  });
+
+  app.get("/api/studies/:slug/download", user, (req, res) => {
+    const path = String(req.query.path ?? "");
+    const doc = getDocuments(db, String(req.params.slug), (p) => p === path)[0];
+    if (!doc) return res.status(404).json({ error: "document not found" });
+    const name = path.split("/").slice(-1)[0].replace(/[^A-Za-z0-9._-]/g, "_");
+    const type = name.endsWith(".csv") ? "text/csv" : name.endsWith(".json") ? "application/json" : "text/markdown";
+    res.setHeader("Content-Type", `${type}; charset=utf-8`);
+    res.setHeader("Content-Disposition", `attachment; filename="${String(req.params.slug)}__${name}"`);
+    res.send(doc.content);
   });
 
   app.get("/api/compare", user, (req, res) => {

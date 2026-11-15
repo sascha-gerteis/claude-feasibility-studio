@@ -89,7 +89,7 @@ lifecycle events, with no simulated status. It can run in-session (preview port 
 authenticated deployment. See [`dashboard/README.md`](dashboard/README.md) for the architecture, live vs stored data,
 deployment and security.
 
-![Command Center](dashboard/docs/screenshots/command-center.png)
+![Command Center](dashboard/docs/screenshots/v2/office.png)
 
 ## Validation
 

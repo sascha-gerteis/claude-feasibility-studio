@@ -113,6 +113,20 @@ export interface Disagreement {
   path?: string;
 }
 
+export interface AgentAssessment {
+  /** Required deliverables present on disk (recorded documents), separate from task status. */
+  report: import("./insights.js").ReportReadiness;
+  /** Result of the recorded quality gate (research/<agent>/quality_check.json); NOT CHECKED if none. */
+  quality: import("./insights.js").QualityResult;
+  /** Copied from the agent's own report — never generated. */
+  insight: import("./insights.js").AgentInsight;
+  risks: import("./insights.js").RiskItem[];
+  /** True only when every required deliverable exists AND the quality gate passed. */
+  complete: boolean;
+}
+
+export interface Blocker { kind: "failed-task" | "quality" | "stage"; agent?: string; message: string; ts?: string }
+
 export interface AgentState extends AgentDef {
   status: AgentStatus;
   statusReason: string;
@@ -129,6 +143,7 @@ export interface AgentState extends AgentDef {
   disagreements: Disagreement[];
   sources: SourceRef[];
   counts: { searches: number; fetches: number; writes: number; runs: number };
+  assessment: AgentAssessment;
 }
 
 export interface StageState {
@@ -171,6 +186,8 @@ export interface StudyState {
   feed: FeedItem[];
   verdict: { verdict: string | null; reliability: string | null; source?: string };
   documents: DocumentMeta[];
+  blockers: Blocker[];
+  overview: { activeAgents: number; completedAssessments: number; specialistsTotal: number; reportsReady: number };
 }
 
 export interface CompareRow {

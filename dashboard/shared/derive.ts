@@ -2,8 +2,9 @@
 // Pure and deterministic: no clocks, timers or estimates. Given the same inputs it always
 // returns the same state, and every status carries the reason (event/document) behind it.
 import { csvObjects } from "./csv.js";
+import { agentInsight, qualityFrom, readiness, risksFrom } from "./insights.js";
 import type {
-  AgentDef, AgentState, AgentStatus, CompareRow, Disagreement, DocumentMeta, DocumentRec, FeedItem,
+  AgentDef, AgentState, AgentStatus, Blocker, CompareRow, Disagreement, DocumentMeta, DocumentRec, FeedItem,
   ResearchActivity, SessionInfo, SourceRef, StageKey, StageState, StageStatus, StudioEvent, StudyState,
   StudySummary, Task,
 } from "./types.js";
@@ -252,6 +253,9 @@ function feedFrom(events: StudioEvent[], tasks: Task[]): FeedItem[] {
         break;
       case "tool.error": push("error", `${str(d.tool)} failed`, `${str(d.summary) ?? ""} ${str(d.error) ?? ""}`.trim()); break;
       case "file.write": push("write", `Wrote ${str(d.path)}`); break;
+      case "quality.check":
+        push(d.status === "PASS" ? "finish" : "error", `Quality check ${d.status === "PASS" ? "passed" : "failed"}`, str(d.path));
+        break;
       case "tool.use":
         if (d.tool === "WebSearch") push("research", `Web search: ${str(d.summary)}`);
         else if (d.tool === "WebFetch") push("research", `Fetched: ${str(d.summary)}`);
@@ -352,6 +356,13 @@ export function deriveStudy(
       ? ["outputs/01_feasibility_report.md", "outputs/00_executive_summary.md", "research/00_director/study_plan.md"]
       : [`research/${name}/findings.md`];
     const act = (activity.get(name) ?? []).sort(by((a) => a.ts));
+    const isDirector = name === DIRECTOR;
+    const report = readiness(name, present, isDirector);
+    const quality = qualityFrom(docMap.get(isDirector ? "outputs/quality_check.json" : `research/${name}/quality_check.json`));
+    const insight = agentInsight(docMap.get(isDirector ? "outputs/00_executive_summary.md" : `research/${name}/findings.md`)
+      ?? (isDirector ? docMap.get("outputs/01_feasibility_report.md") : undefined));
+    if (isDirector && !insight.verdict) insight.verdict = parseVerdict(docMap.get("outputs/04_recommendation.md")).verdict;
+    const risks = risksFrom(docMap.get(isDirector ? "outputs/03_risk_register.csv" : `research/${name}/risks.csv`));
     return {
       ...def,
       status, statusReason, statusSince, currentTask,
@@ -371,6 +382,7 @@ export function deriveStudy(
         writes: writes.get(name)?.size ?? 0,
         runs: mine.filter((t) => t.runId).length,
       },
+      assessment: { report, quality, insight, risks, complete: report.ready && quality.status === "PASS" },
     };
   });
 
@@ -398,8 +410,35 @@ export function deriveStudy(
     return { key: s.key, label: s.label, status, reason, tasks: counts, evidence, verdict: s.key === "ic-decision" ? verdict.verdict : undefined };
   });
 
+  const blockers: Blocker[] = [];
+  for (const a of agents) {
+    const lastFail = a.failedTasks.slice().sort(by((t) => t.endedAt)).pop();
+    const lastDone = a.completedTasks.slice().sort(by((t) => t.endedAt)).pop();
+    if (lastFail && (!lastDone || (lastDone.endedAt ?? "") < (lastFail.endedAt ?? ""))) {
+      blockers.push({ kind: "failed-task", agent: a.name, message: lastFail.error ?? `Task ended as ${lastFail.state}`, ts: lastFail.endedAt });
+    }
+    if (a.assessment.quality.status === "FAIL") {
+      const failed = a.assessment.quality.checks.filter((c) => !c.passed).map((c) => c.name);
+      blockers.push({ kind: "quality", agent: a.name, message: `Report failed the quality check: ${failed.join(", ") || "see details"}`, ts: a.assessment.quality.checkedAt });
+    }
+  }
+  for (const t of tasks) {
+    if (t.state === "failed" && !AGENT_ORDER.includes(t.agent)) {
+      blockers.push({ kind: "failed-task", agent: t.agent, message: t.error ?? "Agent call failed", ts: t.endedAt });
+    }
+  }
+  const specialistsState = agents.filter((a) => a.name !== DIRECTOR);
+  const overview = {
+    activeAgents: agents.filter((a) => a.status === "Working").length,
+    completedAssessments: specialistsState.filter((a) => a.assessment.complete).length,
+    specialistsTotal: specialistsState.length,
+    reportsReady: specialistsState.filter((a) => a.assessment.report.ready).length,
+  };
+
   return {
     study,
+    blockers,
+    overview,
     generatedAt: events.length ? events[events.length - 1].ts : study.createdAt,
     lastEventAt: events.length ? events[events.length - 1].ts : null,
     sessions: [...sessions.values()].sort(by((s) => s.startedAt ?? s.lastEventAt)),

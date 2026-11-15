@@ -163,7 +163,7 @@ for nested in ROOT.rglob(".claude/agents"):
 
 # Dashboard instrumentation: hooks wired to the recorder for every lifecycle event it relies on
 settings_path = ROOT / ".claude" / "settings.json"
-for f in ("scripts/studio/hook.py", "scripts/studio/studio.py", "scripts/studio/studiolib.py", "dashboard/README.md",
+for f in ("scripts/studio/hook.py", "scripts/studio/studio.py", "scripts/studio/studiolib.py", "scripts/studio/quality_gate.py", "dashboard/README.md",
           "dashboard/shared/derive.ts", "dashboard/server/src/app.ts"):
     if not (ROOT / f).is_file():
         errors.append(f"missing dashboard/recorder file {f}")
