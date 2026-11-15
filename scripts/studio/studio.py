@@ -208,10 +208,19 @@ def artifact_export(a: argparse.Namespace) -> None:
     def cut_tasks(tasks: list, n: int) -> list:
         return [{**t, "resultExcerpt": (t.get("resultExcerpt") or "")[:n] or None} for t in tasks]
 
-    for feed_n, act_n, excerpt_n in ((400, 150, 600), (250, 80, 300), (150, 40, 200), (80, 20, 120), (40, 8, 60)):
+    def cut_sources(ag: dict, n: int | None) -> dict:
+        # Embedded sources are a preview; the full registers are synced as documents. Keep the true total.
+        reg = [x for x in ag["sources"] if x.get("origin") == "register"]
+        other = [x for x in ag["sources"] if x.get("origin") != "register"]
+        if n is None or len(ag["sources"]) <= n:
+            return {"sources": ag["sources"], "__sourceTotal": len(reg)}
+        return {"sources": (reg[:n] + other[:max(0, n - len(reg))])[:n], "__sourceTotal": len(reg)}
+
+    for feed_n, act_n, excerpt_n, src_n in ((400, 150, 600, None), (250, 80, 300, None), (150, 40, 200, 60),
+                                            (80, 20, 120, 40), (40, 8, 60, 25), (25, 5, 40, 12)):
         trial = dict(state)
         trial["feed"] = state["feed"][:feed_n]
-        trial["agents"] = [{**ag, "activity": ag["activity"][-act_n:],
+        trial["agents"] = [{**ag, **cut_sources(ag, src_n), "activity": ag["activity"][-act_n:],
                             "completedTasks": cut_tasks(ag["completedTasks"], excerpt_n),
                             "failedTasks": cut_tasks(ag["failedTasks"], excerpt_n),
                             "outstandingTasks": cut_tasks(ag["outstandingTasks"], excerpt_n),
