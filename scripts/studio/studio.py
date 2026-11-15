@@ -164,6 +164,8 @@ def artifact_export(a: argparse.Namespace) -> None:
     compare = S.http_get(f"/api/compare?studies={slug}")
     limit_doc = 240_000
     manifest: list[dict] = []
+    synced_file = S.STATE / f"artifact_synced_{slug}.json"
+    synced = set(json.loads(synced_file.read_text())) if synced_file.exists() else set()
 
     def emit(collection: str, doc_id: str, body: dict) -> None:
         f = out / f"{collection}__{doc_id}.json"
@@ -175,8 +177,11 @@ def artifact_export(a: argparse.Namespace) -> None:
 
     doc_ids: dict[str, str] = {}
     for d in state["documents"]:
-        did = "d" + hashlib.sha1(f"{slug}\0{d['path']}".encode()).hexdigest()[:24]
+        # Content-addressed: a changed file gets a new id, so document writes are always creates.
+        did = "d" + hashlib.sha1(f"{slug}\0{d['path']}\0{d['sha256']}".encode()).hexdigest()[:24]
         doc_ids[d["path"]] = did
+        if did in synced:
+            continue
         full = S.http_get(f"/api/studies/{slug}/document?path={urllib.parse.quote(d['path'])}")
         content = full.pop("content")
         body = {**full, "content": ""}
@@ -217,7 +222,33 @@ def artifact_export(a: argparse.Namespace) -> None:
         emit("compare", slug, compare[0])
     emit("states", slug, state)
     (out / "manifest.json").write_text(json.dumps(manifest, indent=1), "utf-8")
-    print(f"{len(manifest)} documents written to {out} (manifest.json); state covers events through {sync['eventsThrough']}")
+    # Batches for ArtifactData (<= 40 writes, <= 900 KB each); summary docs go last, after the docs they reference.
+    docs = [m for m in manifest if m["collection"] in ("documents", "docparts")]
+    summary = [m for m in manifest if m["collection"] not in ("documents", "docparts")]
+    batches: list[list[dict]] = []
+    cur: list[dict] = []
+    size = 0
+    for m in docs:
+        if cur and (len(cur) >= 40 or size + m["bytes"] > 900_000):
+            batches.append(cur); cur = []; size = 0
+        cur.append({"op": "set", "collection": m["collection"], "doc_id": m["doc_id"], "file_path": m["file_path"]})
+        size += m["bytes"]
+    if cur:
+        batches.append(cur)
+    batches.append([{"op": "set", "collection": m["collection"], "doc_id": m["doc_id"], "file_path": m["file_path"],
+                     "if_version": "<current version, omit if new>"} for m in summary])
+    for i, b in enumerate(batches, 1):
+        (out / f"batch-{i}.json").write_text(json.dumps(b), "utf-8")
+    (out / "synced_ids.json").write_text(json.dumps(sorted(synced | {m["doc_id"] for m in docs})), "utf-8")
+    print(f"{len(docs)} new document(s), {len(summary)} summary doc(s) -> {len(batches)} batch file(s) in {out}; "
+          f"state covers events through {sync['eventsThrough']}. After the batches succeed: studio.py artifact-mark {slug} {out}")
+
+
+def artifact_mark(a: argparse.Namespace) -> None:
+    """Record that a sync's documents were written, so later syncs only send new or changed documents."""
+    ids = json.loads((Path(a.dir) / "synced_ids.json").read_text("utf-8"))
+    (S.STATE / f"artifact_synced_{a.slug}.json").write_text(json.dumps(ids), "utf-8")
+    print(f"{len(ids)} document ids recorded as synced for {a.slug}")
 
 
 def set_config(a: argparse.Namespace) -> None:
@@ -246,6 +277,7 @@ def main() -> None:
     s5 = sub.add_parser("export"); s5.add_argument("slug"); s5.add_argument("file"); s5.set_defaults(fn=export)
     s6 = sub.add_parser("import"); s6.add_argument("file"); s6.set_defaults(fn=import_)
     s8 = sub.add_parser("artifact-export"); s8.add_argument("slug"); s8.add_argument("dir"); s8.set_defaults(fn=artifact_export)
+    s9 = sub.add_parser("artifact-mark"); s9.add_argument("slug"); s9.add_argument("dir"); s9.set_defaults(fn=artifact_mark)
     s7 = sub.add_parser("config"); s7.add_argument("--server", required=True); s7.set_defaults(fn=set_config)
     a = p.parse_args()
     try:
