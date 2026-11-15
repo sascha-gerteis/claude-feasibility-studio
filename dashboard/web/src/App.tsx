@@ -72,6 +72,15 @@ function StudyScope() {
   }
   return (
     <div className="space-y-4">
+      {s.state?.study.kind === "validation" && (
+        <div role="note" className="flex flex-wrap items-center gap-x-3 gap-y-1 rounded-md border-2 border-dashed border-violet-400 bg-violet-50 px-3 py-2 text-sm text-violet-900">
+          <span className="rounded bg-violet-700 px-2 py-0.5 text-xs font-bold tracking-wider text-white">TEST DATA</span>
+          <span>
+            This is a recorded <b>validation run</b> of the agent infrastructure (harmless smoke-test tasks). It contains no
+            feasibility research, no project findings and no investment recommendation.
+          </span>
+        </div>
+      )}
       <DataMode state={s.state} stream={s.stream} loadedAt={s.loadedAt} />
       {s.state ? <Outlet context={{ ...s, slug }} /> : <p className="text-sm text-muted">Loading recorded study data…</p>}
     </div>
