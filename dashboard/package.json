@@ -1,0 +1,45 @@
+{
+  "name": "feasibility-studio-dashboard",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "description": "Command center for the seven-agent Feasibility Research Studio",
+  "engines": {
+    "node": ">=22.13"
+  },
+  "scripts": {
+    "dev:web": "vite",
+    "dev:server": "tsx watch server/src/index.ts",
+    "build": "npm run build:web && npm run build:server",
+    "build:web": "vite build",
+    "build:server": "tsc -p server/tsconfig.json",
+    "typecheck": "tsc -p tsconfig.json --noEmit && tsc -p server/tsconfig.json --noEmit",
+    "start": "node --disable-warning=ExperimentalWarning server/dist/server/src/index.js",
+    "user": "node --disable-warning=ExperimentalWarning server/dist/server/src/cli.js",
+    "test": "vitest run",
+    "test:e2e": "node e2e/tour.cjs",
+    "test:hooks": "python3 -I ../scripts/studio/test_hook.py"
+  },
+  "dependencies": {
+    "express": "5.3.0",
+    "react": "19.3.1",
+    "react-dom": "19.3.1",
+    "react-markdown": "10.1.0",
+    "react-router-dom": "7.18.5",
+    "remark-gfm": "4.0.1",
+    "zod": "4.6.7"
+  },
+  "devDependencies": {
+    "@tailwindcss/vite": "4.3.5",
+    "@types/express": "5.0.6",
+    "@types/node": "22.20.5",
+    "@types/react": "19.3.0",
+    "@types/react-dom": "19.3.0",
+    "@vitejs/plugin-react": "6.3.0",
+    "tailwindcss": "4.3.5",
+    "tsx": "4.23.15",
+    "typescript": "5.9.3",
+    "vite": "8.3.8",
+    "vitest": "5.1.0"
+  }
+}

@@ -175,6 +175,15 @@ The Director reviews every workstream and may order additional challenges.
   start/end, status, output path). A specialist that failed or was not run is reported as such, and its workstream is
   marked NOT EXECUTED in the final report — the Director must not write it from general knowledge.
 
+### Execution instrumentation (dashboard)
+- Claude Code hooks (`.claude/settings.json` → `scripts/studio/hook.py`) record subagent starts and stops, dispatches,
+  failures, stops, web research and file writes **only while a study is active**
+  (`python3 scripts/studio/studio.py study start …`). See `dashboard/README.md`.
+- Orchestrators record planned tasks with `studio.py assign …`, and begin every Agent `description` with a stage tag:
+  `[stage:document-analysis|independent-research|cross-review|financial-validation|final-report|ic-decision]`.
+- `RUN_LOG.md` is generated from recorded events (`studio.py runlog --write`), not written by hand.
+- Agents must not edit `.studio/`, the hooks, or the recorder scripts.
+
 ---
 
 ## 6. Phase status

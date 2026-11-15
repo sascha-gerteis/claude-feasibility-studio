@@ -1,0 +1,8 @@
+**/node_modules
+**/dist
+.git
+.studio
+inputs
+research
+outputs
+models

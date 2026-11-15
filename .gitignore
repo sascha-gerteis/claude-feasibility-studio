@@ -19,3 +19,21 @@ __pycache__/
 *.pyc
 .pytest_cache/
 .DS_Store
+
+# Active-study working files and reports stay local unless publication is explicitly approved
+research/**
+!research/README.md
+!research/**/
+!research/**/.gitkeep
+outputs/**
+!outputs/README.md
+!outputs/.gitkeep
+models/*/
+!models/scripts/
+!models/tests/
+
+# Dashboard runtime data (event outbox, SQLite store, tokens) and build output — never committed
+.studio/
+dashboard/node_modules/
+dashboard/dist/
+dashboard/server/dist/

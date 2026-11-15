@@ -81,6 +81,16 @@ NOT EXECUTED — never written up from general knowledge.
 4. **Review** `outputs/00_executive_summary.md`, `outputs/04_recommendation.md`, `outputs/disagreement_log.csv`
    and `research/00_director/RUN_LOG.md`.
 
+## Research Command Center (dashboard)
+
+`dashboard/` contains a private web dashboard: agent cards with recorded status, an agent detail timeline, the
+research workflow, an activity feed, studies with comparison, and reports. Claude Code hooks feed it real subagent
+lifecycle events, with no simulated status. It can run in-session (preview port 4317) or as a persistent,
+authenticated deployment. See [`dashboard/README.md`](dashboard/README.md) for the architecture, live vs stored data,
+deployment and security.
+
+![Command Center](dashboard/docs/screenshots/command-center.png)
+
 ## Validation
 
 ```bash
