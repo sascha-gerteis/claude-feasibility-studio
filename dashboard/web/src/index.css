@@ -1,0 +1,32 @@
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Inter", "Segoe UI", system-ui, -apple-system, "Helvetica Neue", Arial, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  --color-canvas: #f5f6f8;
+  --color-ink: #1b2430;
+  --color-muted: #5b6676;
+  --color-line: #dfe3e8;
+  --color-navy: #13294b;
+  --color-navy-2: #1f3c68;
+  --color-accent: #2c5aa0;
+}
+
+@layer base {
+  body { font-feature-settings: "tnum" 1, "cv11" 1; }
+  ::selection { background: #c9d8ef; }
+}
+
+.prose-report h1 { @apply text-xl font-semibold text-ink mt-2 mb-3; }
+.prose-report h2 { @apply text-lg font-semibold text-ink mt-6 mb-2 border-b border-line pb-1; }
+.prose-report h3 { @apply text-base font-semibold text-ink mt-4 mb-1; }
+.prose-report p { @apply my-2 leading-relaxed text-[15px]; }
+.prose-report ul { @apply list-disc pl-6 my-2 space-y-1 text-[15px]; }
+.prose-report ol { @apply list-decimal pl-6 my-2 space-y-1 text-[15px]; }
+.prose-report a { @apply text-accent underline underline-offset-2 break-words; }
+.prose-report code { @apply font-mono text-[13px] bg-slate-100 px-1 rounded; }
+.prose-report pre { @apply bg-slate-100 p-3 rounded overflow-x-auto text-[13px]; }
+.prose-report blockquote { @apply border-l-4 border-line pl-3 text-muted italic; }
+.prose-report table { @apply w-full text-sm border-collapse my-3 block overflow-x-auto; }
+.prose-report th { @apply text-left font-semibold bg-slate-50 border border-line px-2 py-1 align-top; }
+.prose-report td { @apply border border-line px-2 py-1 align-top; }

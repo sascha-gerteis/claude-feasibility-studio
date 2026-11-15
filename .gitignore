@@ -31,3 +31,9 @@ outputs/**
 models/*/
 !models/scripts/
 !models/tests/
+
+# Dashboard runtime data (event outbox, SQLite store, tokens) and build output — never committed
+.studio/
+dashboard/node_modules/
+dashboard/dist/
+dashboard/server/dist/

@@ -161,6 +161,34 @@ for nested in ROOT.rglob(".claude/agents"):
     if nested != agent_dir:
         errors.append(f"nested agent directory not discoverable by Claude Code: {nested.relative_to(ROOT)}")
 
+# Dashboard instrumentation: hooks wired to the recorder for every lifecycle event it relies on
+settings_path = ROOT / ".claude" / "settings.json"
+for f in ("scripts/studio/hook.py", "scripts/studio/studio.py", "scripts/studio/studiolib.py", "dashboard/README.md",
+          "dashboard/shared/derive.ts", "dashboard/server/src/app.ts"):
+    if not (ROOT / f).is_file():
+        errors.append(f"missing dashboard/recorder file {f}")
+if not settings_path.is_file():
+    errors.append("missing .claude/settings.json (dashboard hooks)")
+else:
+    import json as _json
+    try:
+        hooks = _json.loads(settings_path.read_text("utf-8")).get("hooks", {})
+    except ValueError as exc:
+        hooks = {}
+        errors.append(f".claude/settings.json is not valid JSON: {exc}")
+    need = {"SessionStart": None, "SessionEnd": None, "SubagentStart": None, "SubagentStop": None,
+            "PreToolUse": "Agent", "PostToolUse": "Agent|TaskStop", "PostToolUseFailure": "Agent"}
+    for ev, tools in need.items():
+        entries = hooks.get(ev, [])
+        wired = [e for e in entries if any("scripts/studio/hook.py" in h.get("command", "") for h in e.get("hooks", []))]
+        if not wired:
+            errors.append(f"hook {ev} is not wired to scripts/studio/hook.py")
+        elif tools:
+            matchers = "|".join(e.get("matcher", "*") for e in wired)
+            for t in tools.split("|"):
+                if t not in matchers.split("|") and "*" not in matchers:
+                    errors.append(f"hook {ev} matcher does not include {t}")
+
 for w in warnings:
     print("WARN:", w)
 if errors:
@@ -170,4 +198,4 @@ if errors:
     sys.exit(1)
 print(f"PASS: {len(names)} agents ({', '.join(sorted(names))}); frontmatter valid; Director can delegate to all "
       f"{len(SPECIALISTS)} specialists; {len(REQUIRED_FILES)} shared files, {len(refs)} referenced paths and "
-      f"{len(REQUIRED_DIRS)} workspace directories present.")
+      f"{len(REQUIRED_DIRS)} workspace directories present; dashboard hooks wired.")
