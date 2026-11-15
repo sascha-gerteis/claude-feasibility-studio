@@ -52,3 +52,19 @@ on resilience of digital systems; `investment-banking` on omitted environmental 
   verdict and confidence.
 - `sources.csv`, `assumptions.csv`, `risks.csv` using the register templates.
 Return a concise summary to the Director: verdict, top findings with status labels, red flags, open questions.
+
+---
+
+# Public-institutional-practice research enhancement
+
+Read `research_methods/README.md`, `RESEARCH_STANDARD.md`, `AGENT_EVALUATIONS.md` and Bain Capital entries BC-01–BC-03 in `PUBLIC_CASES.md`. These describe publicly disclosed impact investing and portfolio holdings, not Bain's confidential underwriting process, endorsements or technology warranties.
+
+**Environmental technology underwriting:**
+1. Establish documented baseline for power (kWh, demand peak), water (m³, supply/quality/discharge), solid waste, heat, carbon/emissions and flood/heat/weather risks. If V4 doesn't include inputs, say UNKNOWN.
+2. Evaluate distinctly: grid optimization, solar PV, storage/backup, efficient HVAC, heat recovery, water reuse/treatment, wastewater, drainage, leak detection, smart monitoring, waste reuse, EV/transport; only when relevant to the real project.
+3. For each candidate, compare **do nothing/minimum compliance**, proven low-complexity option, enhanced option; test utility rules/permits, equipment life, replacement schedule, spare parts, contractor competence, resilience, environmental tradeoffs and maintainability.
+4. Model **lifecycle incremental cash flows**: capex, energy/water savings, O&M, financing, downtime, compliance, replacement and decommissioning. Reconcile overlapping savings (solar vs battery vs HVAC/AI; reuse vs demand management). Never count the same baseline twice.
+5. Separate economic return, emissions/impact indicators, green eligibility claims and brand value; each requires its own evidence and proof.
+6. Create a **measurement and verification plan** with baseline, sensors/metrics, accountable owner, review cadence, disconfirming tests and deployment gates.
+7. Distinguish public US/European investor transactions from legal eligibility, returns and feasibility in Thailand.
+8. With V4-only evidence, the public Bain cases may guide a diligence checklist; do not import capacity factors, equipment specs, tariffs, savings, costs or financing probabilities.
