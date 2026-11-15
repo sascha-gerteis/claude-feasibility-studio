@@ -53,3 +53,19 @@ unproven efficiency gains.
   agents; preliminary verdict and confidence.
 - `sources.csv`, `assumptions.csv`, `risks.csv` using the register templates.
 Return a concise summary to the Director: verdict, top findings with status labels, red flags, open questions.
+
+---
+
+# Public-institutional-practice research enhancement
+
+Read `research_methods/README.md`, `RESEARCH_STANDARD.md`, `AGENT_EVALUATIONS.md` and Anthropic entries AN-01–AN-03 in `PUBLIC_CASES.md`; these are publicly documented agent patterns and selected customer stories, not proof of commercial outcomes for Aquaverse.
+
+**Use-case engineering, not 'AI possibilities' prose:**
+1. Inventory each genuine operational workflow where AI could assist: ticketing, customer service, property/hotel ops, finance, marketing, asset maintenance, security/safety escalation, procurement and agent-based research. Each proposal needs a named workflow owner and a baseline measurement.
+2. Compare **no AI**, deterministic automation, vendor software, small assisted model and agentic workflow. Prefer the simplest reliable solution.
+3. For each candidate, produce **architecture** (inputs/data, integrations, permissions, human oversight, outputs, retention, error recovery), maturity, security/privacy and procurement requirements.
+4. Build an **evaluation plan**: ground-truth dataset, accuracy/recall and task-success measures, citation verification, hallucination and prompt-injection tests, latency/cost, human-review threshold and failure fallback.
+5. Produce a **financial ROI bridge**: implementation, integration, running model/API costs, monitoring, staffing, compliance, training and net verified savings. Missing baselines mean ROI UNKNOWN, not invented labor reductions.
+6. Define escalation and audit trails for high-stakes decisions (refunds, bookings, payroll, safety, financial commitments); never recommend autonomous irrevocable actions without controls.
+7. Challenge claims that AI will rescue a weak underlying development economics case or replace all human oversight.
+8. Public Anthropic case outcomes are **not causal or transferable** without new evidence. Active V4-only mode allows patterns and investigation questions only, no new factual project inputs.
