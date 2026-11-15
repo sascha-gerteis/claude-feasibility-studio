@@ -29,6 +29,16 @@ LABELS = ["VERIFIED", "SPONSOR", "CALCULATED", "ESTIMATE", "ASSUMPTION", "PROJEC
 VERDICT = re.compile(r"(CONDITIONAL GO|NO-GO|\bGO\b|DEFER)")
 MIN_WORDS_SPECIALIST = 2500
 MIN_WORDS_DIRECTOR = 4000
+LOCATION = re.compile(r"(?:#?L\d+|line\s*\d+|§|section|table|footnote|\[\^\d+\])", re.I)
+
+
+def study_config() -> dict:
+    """research/00_director/study_config.json, e.g. {"evidence_base": "internal-document", "source_document": "...",
+    "director_outputs": [...], "min_words": {...}}. Default: external research mode."""
+    try:
+        return json.loads((S.ROOT / "research" / "00_director" / "study_config.json").read_text("utf-8"))
+    except (OSError, ValueError):
+        return {}
 
 SPECIALIST_SECTIONS = {
     "executive summary / thesis": r"executive|thesis|summary",
@@ -77,9 +87,13 @@ def check_specialist(agent: str) -> dict:
     add("Uses ≥ 3 evidence-status labels", len(used) >= 3, ", ".join(used) or "none")
 
     src = rows(base / "sources.csv")
-    with_url = [r for r in src if re.match(r"https?://", (r.get("document_url_or_path") or "").strip())]
     add("Source register has ≥ 8 sources", len(src) >= 8, f"{len(src)} rows")
-    add("≥ 6 sources have a traceable URL", len(with_url) >= 6, f"{len(with_url)} with URL")
+    if study_config().get("evidence_base") == "internal-document":
+        located = [r for r in src if LOCATION.search(" ".join((r.get(k) or "") for k in ("document_url_or_path", "page_or_table", "title")))]
+        add("≥ 6 sources trace to a location in the source document", len(located) >= 6, f"{len(located)} with line/section/table/footnote")
+    else:
+        with_url = [r for r in src if re.match(r"https?://", (r.get("document_url_or_path") or "").strip())]
+        add("≥ 6 sources have a traceable URL", len(with_url) >= 6, f"{len(with_url)} with URL")
     ids = {(r.get("source_id") or "").strip() for r in src if (r.get("source_id") or "").strip()}
     cited = {i for i in ids if re.search(r"(?<![\w-])%s(?![\w-])" % re.escape(i), md)}
     add("Report cites ≥ 8 registered sources by ID", len(cited) >= 8, f"{len(cited)} of {len(ids)} cited")
@@ -110,14 +124,22 @@ def check_specialist(agent: str) -> dict:
 
 def check_director() -> dict:
     out = S.ROOT / "outputs"
+    cfg = study_config()
     checks: list[dict] = []
     add = lambda name, ok, detail="": checks.append({"name": name, "passed": bool(ok), "detail": detail})  # noqa: E731
     for f in ["00_executive_summary.md", "01_feasibility_report.md", "02_financial_scenarios.md", "03_risk_register.csv",
-              "04_recommendation.md", "source_register.csv", "assumption_register.csv", "disagreement_log.csv"]:
+              "04_recommendation.md", "source_register.csv", "assumption_register.csv", "disagreement_log.csv",
+              *cfg.get("director_outputs", [])]:
         add(f"{f} exists", (out / f).is_file())
     rep = read(out / "01_feasibility_report.md") or ""
     words = len(re.findall(r"\w+", rep))
     add(f"Integrated report ≥ {MIN_WORDS_DIRECTOR} words", words >= MIN_WORDS_DIRECTOR, f"{words} words")
+    for f, n in cfg.get("min_words", {}).items():
+        w = len(re.findall(r"\w+", read(out / f) or ""))
+        add(f"{f} ≥ {n} words", w >= n, f"{w} words")
+    for f, n in cfg.get("min_rows", {}).items():
+        k = len(rows(out / f))
+        add(f"{f} has ≥ {n} rows", k >= n, f"{k} rows")
     rec = read(out / "04_recommendation.md") or ""
     vm = re.search(r"\*\*Verdict:\*\*\s*([^\n]+)", rec)
     verdict = VERDICT.search(vm.group(1).upper()) if vm and " / " not in vm.group(1) else None
@@ -128,7 +150,8 @@ def check_director() -> dict:
     dis = rows(out / "disagreement_log.csv")
     add("Disagreement log has ≥ 3 entries", len(dis) >= 3, f"{len(dis)} rows")
     src = rows(out / "source_register.csv")
-    add("Consolidated source register has ≥ 30 sources", len(src) >= 30, f"{len(src)} rows")
+    need = int(cfg.get("min_consolidated_sources", 30))
+    add(f"Consolidated source register has ≥ {need} sources", len(src) >= need, f"{len(src)} rows")
     gates = []
     for a in SPECIALISTS:
         q = read(S.ROOT / "research" / a / "quality_check.json")

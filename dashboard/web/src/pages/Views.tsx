@@ -91,7 +91,10 @@ export function FindingsPage() {
 const FINAL_DOCS: { path: string; label: string; note: string }[] = [
   { path: "outputs/00_executive_summary.md", label: "Executive summary", note: "One-page decision brief" },
   { path: "outputs/04_recommendation.md", label: "Investment committee recommendation", note: "Verdict, conditions and dissent" },
-  { path: "outputs/01_feasibility_report.md", label: "Integrated feasibility report", note: "The full study" },
+  { path: "outputs/01_feasibility_report.md", label: "Feasibility study (revised)", note: "The complete revised study" },
+  { path: "outputs/05_director_review_of_V4.md", label: "Director's review of the source study", note: "Errors, contradictions, approved corrections" },
+  { path: "outputs/06_change_register_V4_to_V5.csv", label: "Change register", note: "Every change from the source study, with its basis" },
+  { path: "outputs/07_outstanding_evidence_register.csv", label: "Outstanding evidence register", note: "Missing documents ranked by decision impact" },
   { path: "outputs/02_financial_scenarios.md", label: "Financial scenarios", note: "Base, downside, upside and stress cases" },
   { path: "outputs/03_risk_register.csv", label: "Risk register", note: "Consolidated risks" },
   { path: "outputs/assumption_register.csv", label: "Assumption register", note: "Every model input and its evidence status" },
