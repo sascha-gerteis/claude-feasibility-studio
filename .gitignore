@@ -37,3 +37,6 @@ models/*/
 dashboard/node_modules/
 dashboard/dist/
 dashboard/server/dist/
+
+# Formatted study deliverables (Word, PDF, Excel) contain confidential study content
+deliverables/

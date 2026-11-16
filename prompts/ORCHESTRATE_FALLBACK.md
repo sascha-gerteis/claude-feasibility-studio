@@ -24,6 +24,11 @@ specialists' analysis yourself.
 - Every Agent tool call MUST use a description that begins with a stage tag, e.g.
   `[stage:independent-research] Real estate market and comparables`. Stages: `document-analysis`,
   `independent-research`, `cross-review`, `financial-validation`, `final-report`, `ic-decision`.
+- If the user has a hosted dashboard (claude.ai artifact; its URL is in `.studio/config.json` as
+  `hosted_artifact_url`), sync it after every dispatch round and every agent completion:
+  run `python3 scripts/studio/studio.py artifact-export <slug> <dir>`, list the artifact database collections to
+  read current versions, then write the manifest's files with `ArtifactData` `batch` (`if_version` on existing
+  documents). See `dashboard/README.md`, Mode 3.
 - Never mark an agent as run yourself. The run log is generated from recorded hook events:
   `python3 scripts/studio/studio.py runlog --write` (writes `research/00_director/RUN_LOG.md`).
 
@@ -51,6 +56,16 @@ specialists' analysis yourself.
    dashboard), the verdict, and any agent that failed or was not run.
 9. When the study is finished: `python3 scripts/studio/studio.py study stop`, and export a durable bundle with
    `python3 scripts/studio/studio.py export <slug> <file>` if the server is not a persistent deployment.
+
+**Quality gate (mandatory before "complete").** After each specialist returns, run
+`python3 scripts/studio/quality_gate.py <agent>`. A FAIL goes back to that specialist with the failed checks listed
+(one revision round, then record it as a blocker). The Director's outputs are gated with
+`quality_gate.py head-of-market-research`. The dashboard shows an assessment as complete only when its report exists
+and the gate passed.
+
+**Hook recording needs a fresh session.** Hooks load when a Claude Code session starts in this repository. If the
+orchestrating session started elsewhere (for example before the repo was attached), run each stage in a headless
+session from the repository root instead: `claude -p --permission-mode dontAsk < stage_prompt.txt`.
 
 If any specialist fails, retry once; if it fails again, its workstream is NOT EXECUTED — do not substitute your own
 analysis. The dashboard will show the failure as recorded.

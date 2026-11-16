@@ -150,6 +150,33 @@ describe("status derivation from recorded events", () => {
   });
 });
 
+describe("assessment completion is separate from task status", () => {
+  it("a completed smoke task is NOT a completed assessment", () => {
+    const s = derive([
+      ev("task.dispatch", "08:00", { agent: "ai-strategy", tool_use_id: "Q1", data: { description: "smoke" } }),
+      ev("agent.start", "08:01", { agent: "ai-strategy", agent_run_id: "QR1" }),
+      ev("agent.stop", "08:02", { agent: "ai-strategy", agent_run_id: "QR1" }),
+    ], [doc("research/ai-strategy/smoke_check.md")]);
+    const a = s.agents.find((x) => x.name === "ai-strategy")!;
+    expect(a.status).toBe("Completed");
+    expect(a.assessment.report.ready).toBe(false);
+    expect(a.assessment.complete).toBe(false);
+    expect(s.overview.completedAssessments).toBe(0);
+  });
+
+  it("complete only when all deliverables exist AND the quality gate passed; a failed gate is a blocker", () => {
+    const files = ["findings.md", "sources.csv", "assumptions.csv", "risks.csv"].map((f) => doc(`research/syndications/${f}`, "x"));
+    const pass = doc("research/syndications/quality_check.json", '{"status":"PASS","checks":[]}');
+    const fail = doc("research/syndications/quality_check.json", '{"status":"FAIL","checks":[{"name":"Report length","passed":false}]}');
+    expect(derive([], files).agents.find((x) => x.name === "syndications")!.assessment.complete).toBe(false);
+    const ok = derive([], [...files, pass]);
+    expect(ok.agents.find((x) => x.name === "syndications")!.assessment.complete).toBe(true);
+    expect(ok.overview.completedAssessments).toBe(1);
+    const bad = derive([], [...files, fail]);
+    expect(bad.blockers[0]).toMatchObject({ kind: "quality", agent: "syndications" });
+  });
+});
+
 describe("csv", () => {
   it("handles quotes, commas and newlines", () => {
     expect(parseCsv('a,b\n"x, y","he said ""hi"""\n"multi\nline",2\n')).toEqual([["a", "b"], ["x, y", 'he said "hi"'], ["multi\nline", "2"]]);

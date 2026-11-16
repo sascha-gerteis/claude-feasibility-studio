@@ -8,7 +8,73 @@ with a SQLite store.
 progress percentages, timers or demo data. When no live data is flowing, the dashboard says so and shows the last stored
 state.
 
-![Command Center](docs/screenshots/command-center.png)
+![Research office](docs/screenshots/v2/office.png)
+
+## The research office (v2)
+
+The home page is a virtual research office. The **Head of Market Research** sits at the top, directing six specialists,
+each drawn as an original illustrated character (SVG; no logos, no likenesses of real people). Navigation has four
+items: **Overview / Agents / Research Findings / Final Report**. Raw logs, run IDs, file names and sessions live under
+**Technical details**.
+
+| Character pose | Shown when (recorded events only) |
+| --- | --- |
+| Typing at the desk | A run is in progress (`SubagentStart` with no completion yet) on research work |
+| Reading a document | A run is in progress on document analysis, cross-review or the final report |
+| Hourglass | A task is assigned or dispatched, but the agent has not started |
+| Green check (one-time pop) | Its latest task finished |
+| Warning sign | Its latest task failed, was stopped, or its session ended mid-run |
+| Motionless, screen off | Nothing recorded |
+
+Only the two in-progress poses move continuously. All motion stops under `prefers-reduced-motion`. The mapping is the
+pure function `poseFor()` in `shared/presentation.ts`, covered by `tests/presentation.test.ts`.
+
+**Three separate facts per agent.** Never one combined "done" flag:
+1. **Task status** — from hook events (Working / Waiting / Task finished / Problem / Idle).
+2. **Report readiness** — which required deliverables exist (`findings.md`, `sources.csv`, `assumptions.csv`,
+   `risks.csv`; for the Director, the eight final outputs).
+3. **Quality** — the recorded result of `scripts/studio/quality_gate.py`: NOT CHECKED, PASS or FAIL, with every check
+   listed.
+
+An **assessment is complete** only when the report is ready **and** the quality gate passed. A `SubagentStop` alone
+never completes an assessment. Findings, verdicts and risks shown on cards are **copied from the agent's own report**
+(`shared/insights.ts`); nothing is generated.
+
+**Data mode labels:**
+
+| Label | Meaning |
+| --- | --- |
+| **TEST DATA** | A validation run; also shown as a page-wide banner |
+| **LIVE** | Self-served dashboard, stream connected and a recorded session open |
+| **SYNCED SNAPSHOT** | The hosted claude.ai page, current as of its last sync |
+| **STORED RECORD** | Nothing is running |
+| **NOT LIVE** | Connection lost |
+
+**Downloads.**
+- Self-served: an authenticated attachment endpoint, `GET /api/studies/:slug/download?path=`.
+- Hosted: the claude.ai save prompt (`downloads` capability).
+
+**Deep links (hosted).** `#overview`, `#agents`, `#findings`, `#final-report`, `#technical`, `#agent-<agent-name>`.
+
+### Quality gate
+
+```bash
+python3 scripts/studio/quality_gate.py <agent>   # or --all
+```
+
+Writes `research/<agent>/quality_check.json` (Director: `outputs/quality_check.json`) and delivers it to the dashboard.
+
+- **Specialist checks:**
+  - report of at least 2,500 words, with the required sections
+  - a stated verdict and at least 3 evidence labels
+  - at least 8 sources, 6 of them with URLs
+  - at least 8 registered sources cited by ID, and every cited ID resolves to the register
+  - at least 5 assumptions using valid labels, at least 5 risks, at least 3 failure modes
+- **Director checks:** all eight outputs present, an integrated report of at least 4,000 words covering all six
+  workstreams, one verdict, at least 3 disagreements, at least 30 consolidated sources, and all six specialist gates
+  passed.
+
+The gate checks structure and evidence hygiene, **not** whether conclusions are right.
 
 ## How it works
 
@@ -32,6 +98,8 @@ browser (React) — Command Center · Agent detail · Workflow · Activity feed 
   Claude Code. Payload shapes were captured from Claude Code 2.1.325 and are covered by `test_hook.py`.
 * **Server** (`server/`). Stores events idempotently by UUID and every distinct document version, derives agent and
   stage status on each read, and pushes a "data changed" notification over SSE.
+* **Insights** (`shared/insights.ts`, `shared/presentation.ts`). Report readiness, quality results, summaries copied
+  from reports, risk ordering, pose mapping and data-mode labels.
 * **Derivation** (`shared/derive.ts`). Pure functions with no clocks or timers. Every status carries its basis, for
   example "SubagentStart recorded at 09:40:44; no completion event recorded yet". Covered by `tests/derive.test.ts`.
 
@@ -139,6 +207,32 @@ Kubernetes cluster, and so on.
 
 With Mode 2, hooks POST every event as it happens, so the hosted dashboard is **live from any browser** while a
 session runs. Every study, its events and every document version persist on the volume.
+
+### Mode 3 — Private hosted page on claude.ai (no hosting account needed)
+The same React app is built as a single page (`npm run build:artifact` → `dist/artifact/command-center.html`) and
+published as a **private claude.ai artifact**. Access is through your claude.ai login: only you, plus anyone you add
+from the page's Share menu, can open it. Its data lives in the artifact's database. The database rules let everyone
+admitted read it and **only the owner write it**, and Claude writes as you through its `ArtifactData` tool.
+
+How updates reach it. The hooks keep recording into the in-session server exactly as in Mode 1. The orchestrating
+Claude session then syncs a snapshot:
+
+```bash
+python3 scripts/studio/studio.py artifact-export <slug> <dir>
+```
+
+This writes one JSON file per database document, plus `manifest.json`. Claude then writes those files with
+`ArtifactData` `batch` (up to 50 writes per batch). Existing documents need their current `version` as `if_version`,
+so list the collections first. The open page re-renders the moment a sync lands; no reload is needed.
+
+What "live" means here. The page is exactly as current as the last sync. Its banner shows **SYNCED · STUDY RUNNING**
+(an orchestration session was open at that sync) or **STORED RECORD**, always with the sync time and the time of the
+last recorded event it covers. Events recorded between syncs appear at the next sync. During a study, the orchestrator
+syncs after every dispatch round and every agent completion. For hook-by-hook real-time viewing from any browser, use
+Mode 2.
+
+Limits: 256 KiB per document (the exporter trims the oldest feed and activity detail first, and splits large reports
+into parts) and 25,000 documents per artifact.
 
 ### Security and access control
 * **Browser authentication:** username/password (scrypt), opaque HttpOnly `SameSite=Strict` session cookie (`Secure`

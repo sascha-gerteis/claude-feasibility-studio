@@ -10,6 +10,7 @@
   runlog [<slug>] [--write]        print/write research/00_director/RUN_LOG.md from recorded events
   export <slug> <file.json>        download a full study bundle (events + documents) from the server
   import <file.json>               load a bundle into the configured server
+  artifact-export <slug> <dir>     write documents for the hosted (claude.ai artifact) dashboard
   config --server URL              set the dashboard server URL (default http://127.0.0.1:4317)
 """
 from __future__ import annotations
@@ -147,6 +148,126 @@ def import_(a: argparse.Namespace) -> None:
     print("imported" if ok else f"import failed: {msg}")
 
 
+def artifact_export(a: argparse.Namespace) -> None:
+    """Write artifact-database documents (one JSON file each) plus manifest.json for the hosted dashboard.
+
+    Everything comes from the dashboard server's derivation of recorded events and stored documents.
+    The orchestrating Claude session then writes the files with its ArtifactData tool (batch writes).
+    """
+    import hashlib
+    import urllib.parse
+    slug = a.slug
+    out = Path(a.dir)
+    out.mkdir(parents=True, exist_ok=True)
+    state = S.http_get(f"/api/studies/{slug}")
+    summary = next((x for x in S.http_get("/api/studies") if x["slug"] == slug), None)
+    compare = S.http_get(f"/api/compare?studies={slug}")
+    limit_doc = 240_000
+    manifest: list[dict] = []
+    synced_file = S.STATE / f"artifact_synced_{slug}.json"
+    synced = set(json.loads(synced_file.read_text())) if synced_file.exists() else set()
+
+    def emit(collection: str, doc_id: str, body: dict) -> None:
+        f = out / f"{collection}__{doc_id}.json"
+        f.write_text(json.dumps(body, ensure_ascii=False), "utf-8")
+        size = f.stat().st_size
+        if size > 256 * 1024:
+            die(f"{collection}/{doc_id} is {size} bytes, over the 256 KiB document limit")
+        manifest.append({"collection": collection, "doc_id": doc_id, "file_path": str(f.resolve()), "bytes": size})
+
+    doc_ids: dict[str, str] = {}
+    for d in state["documents"]:
+        # Content-addressed: a changed file gets a new id, so document writes are always creates.
+        did = "d" + hashlib.sha1(f"{slug}\0{d['path']}\0{d['sha256']}".encode()).hexdigest()[:24]
+        doc_ids[d["path"]] = did
+        if did in synced:
+            continue
+        full = S.http_get(f"/api/studies/{slug}/document?path={urllib.parse.quote(d['path'])}")
+        content = full.pop("content")
+        body = {**full, "content": ""}
+        raw = content.encode("utf-8")
+        if len(raw) <= 200_000:
+            body["content"] = content
+        else:
+            chunks, cur = [], ""
+            for ch in content:
+                cur += ch
+                if len(cur) >= 60_000:
+                    chunks.append(cur); cur = ""
+            if cur:
+                chunks.append(cur)
+            body["parts"] = len(chunks)
+            for i, c in enumerate(chunks):
+                emit("docparts", f"{did}-{i}", {"text": c})
+        emit("documents", did, body)
+
+    sync = {"syncedAt": S.now(), "eventsThrough": state.get("lastEventAt"), "source": "studio.py artifact-export"}
+    state["__sync"] = sync
+    state["__docIds"] = doc_ids
+    # Keep the state document under the store's per-document limit, trimming the oldest detail first.
+    def cut_tasks(tasks: list, n: int) -> list:
+        return [{**t, "resultExcerpt": (t.get("resultExcerpt") or "")[:n] or None} for t in tasks]
+
+    def cut_sources(ag: dict, n: int | None) -> dict:
+        # Embedded sources are a preview; the full registers are synced as documents. Keep the true total.
+        reg = [x for x in ag["sources"] if x.get("origin") == "register"]
+        other = [x for x in ag["sources"] if x.get("origin") != "register"]
+        if n is None or len(ag["sources"]) <= n:
+            return {"sources": ag["sources"], "__sourceTotal": len(reg)}
+        return {"sources": (reg[:n] + other[:max(0, n - len(reg))])[:n], "__sourceTotal": len(reg)}
+
+    for feed_n, act_n, excerpt_n, src_n in ((400, 150, 600, None), (250, 80, 300, None), (150, 40, 200, 60),
+                                            (80, 20, 120, 40), (40, 8, 60, 25), (25, 5, 40, 12)):
+        trial = dict(state)
+        trial["feed"] = state["feed"][:feed_n]
+        trial["agents"] = [{**ag, **cut_sources(ag, src_n), "activity": ag["activity"][-act_n:],
+                            "completedTasks": cut_tasks(ag["completedTasks"], excerpt_n),
+                            "failedTasks": cut_tasks(ag["failedTasks"], excerpt_n),
+                            "outstandingTasks": cut_tasks(ag["outstandingTasks"], excerpt_n),
+                            "currentTask": (cut_tasks([ag["currentTask"]], excerpt_n)[0] if ag.get("currentTask") else ag.get("currentTask"))}
+                           for ag in state["agents"]]
+        trial["orchestrator"] = {**state["orchestrator"], "activity": state["orchestrator"]["activity"][-min(act_n, 50):]}
+        trial["tasks"] = [{**t, "resultExcerpt": (t.get("resultExcerpt") or "")[:excerpt_n] or None} for t in state["tasks"]]
+        if len(json.dumps(trial, ensure_ascii=False).encode()) <= limit_doc:
+            state = trial
+            break
+    else:
+        die("study state is too large for one artifact document even after trimming")
+    if summary:
+        emit("studies", slug, {**summary, "__sync": sync})
+    if compare:
+        emit("compare", slug, compare[0])
+    emit("states", slug, state)
+    (out / "manifest.json").write_text(json.dumps(manifest, indent=1), "utf-8")
+    # Batches for ArtifactData (<= 40 writes, <= 900 KB each); summary docs go last, after the docs they reference.
+    docs = [m for m in manifest if m["collection"] in ("documents", "docparts")]
+    summary = [m for m in manifest if m["collection"] not in ("documents", "docparts")]
+    batches: list[list[dict]] = []
+    cur: list[dict] = []
+    size = 0
+    for m in docs:
+        if cur and (len(cur) >= 40 or size + m["bytes"] > 900_000):
+            batches.append(cur); cur = []; size = 0
+        cur.append({"op": "set", "collection": m["collection"], "doc_id": m["doc_id"], "file_path": m["file_path"]})
+        size += m["bytes"]
+    if cur:
+        batches.append(cur)
+    batches.append([{"op": "set", "collection": m["collection"], "doc_id": m["doc_id"], "file_path": m["file_path"],
+                     "if_version": "<current version, omit if new>"} for m in summary])
+    for i, b in enumerate(batches, 1):
+        (out / f"batch-{i}.json").write_text(json.dumps(b), "utf-8")
+    (out / "synced_ids.json").write_text(json.dumps(sorted(synced | {m["doc_id"] for m in docs})), "utf-8")
+    print(f"{len(docs)} new document(s), {len(summary)} summary doc(s) -> {len(batches)} batch file(s) in {out}; "
+          f"state covers events through {sync['eventsThrough']}. After the batches succeed: studio.py artifact-mark {slug} {out}")
+
+
+def artifact_mark(a: argparse.Namespace) -> None:
+    """Record that a sync's documents were written, so later syncs only send new or changed documents."""
+    ids = json.loads((Path(a.dir) / "synced_ids.json").read_text("utf-8"))
+    (S.STATE / f"artifact_synced_{a.slug}.json").write_text(json.dumps(ids), "utf-8")
+    print(f"{len(ids)} document ids recorded as synced for {a.slug}")
+
+
 def set_config(a: argparse.Namespace) -> None:
     S.STATE.mkdir(parents=True, exist_ok=True)
     cfg = S.read_json(S.CONFIG) or {}
@@ -172,6 +293,8 @@ def main() -> None:
     s4.set_defaults(fn=runlog)
     s5 = sub.add_parser("export"); s5.add_argument("slug"); s5.add_argument("file"); s5.set_defaults(fn=export)
     s6 = sub.add_parser("import"); s6.add_argument("file"); s6.set_defaults(fn=import_)
+    s8 = sub.add_parser("artifact-export"); s8.add_argument("slug"); s8.add_argument("dir"); s8.set_defaults(fn=artifact_export)
+    s9 = sub.add_parser("artifact-mark"); s9.add_argument("slug"); s9.add_argument("dir"); s9.set_defaults(fn=artifact_mark)
     s7 = sub.add_parser("config"); s7.add_argument("--server", required=True); s7.set_defaults(fn=set_config)
     a = p.parse_args()
     try:

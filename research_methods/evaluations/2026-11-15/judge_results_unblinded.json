@@ -1,0 +1,172 @@
+{
+ "head-of-market-research": {
+  "old": {
+   "must_pass": "8/8",
+   "failed": [],
+   "keys": 12,
+   "focus": 1,
+   "errors": 0,
+   "imports": 0,
+   "decision": 5,
+   "depth": 4
+  },
+  "new": {
+   "must_pass": "8/8",
+   "failed": [],
+   "keys": 12,
+   "focus": 1,
+   "errors": 0,
+   "imports": 0,
+   "decision": 5,
+   "depth": 5
+  },
+  "preferred": "new",
+  "rationale": "Both responses catch all twelve planted issues, make no arithmetic or external-import errors, and reach the same well-gated DEFER verdict. B handles the focus item K4 better: it quantifies the 55%/78% range from the memo's own inputs and gives a named specialist the job of reconciling the three views. It also adds integrative points that A lacks, such as sizing the lagoon claim and questioning the utility baseline."
+ },
+ "investment-banking": {
+  "old": {
+   "must_pass": "8/8",
+   "failed": [],
+   "keys": 12,
+   "focus": 4,
+   "errors": 1,
+   "imports": 0,
+   "decision": 5,
+   "depth": 4
+  },
+  "new": {
+   "must_pass": "8/8",
+   "failed": [],
+   "keys": 12,
+   "focus": 4,
+   "errors": 0,
+   "imports": 0,
+   "decision": 4,
+   "depth": 4
+  },
+  "preferred": "new",
+  "rationale": "Both responses find all twelve planted issues, handle the four focus items (K1, K2, K9, K10) correctly, cite memo lines, and reject the L28 Goldman benchmark. A wins narrowly because every number in it is correct, while B misstates the occupancy sensitivity as '\u00b120%'; B's slightly richer gating does not outweigh an arithmetic slip in an investment-banking review built on numbers."
+ },
+ "project-technology": {
+  "old": {
+   "must_pass": "7/8",
+   "failed": [
+    "low_confidence_disclosed"
+   ],
+   "keys": 12,
+   "focus": 2,
+   "errors": 1,
+   "imports": 0,
+   "decision": 4,
+   "depth": 4
+  },
+  "new": {
+   "must_pass": "8/8",
+   "failed": [],
+   "keys": 12,
+   "focus": 2,
+   "errors": 0,
+   "imports": 0,
+   "decision": 4,
+   "depth": 5
+  },
+  "preferred": "new",
+  "rationale": "Both responses find all twelve planted issues with correct arithmetic and handle the focus items well. B states its confidence more precisely, sets explicit constraints (peak-day capacity, a no-technology base case, an unsupported utility baseline) and has no factual slips about the memo, while A claims HIGH confidence throughout and mixes up stabilised adviser forecasts with year-1 occupancy."
+ },
+ "syndications": {
+  "old": {
+   "must_pass": "8/8",
+   "failed": [],
+   "keys": 12,
+   "focus": 3,
+   "errors": 0,
+   "imports": 0,
+   "decision": 5,
+   "depth": 5
+  },
+  "new": {
+   "must_pass": "8/8",
+   "failed": [],
+   "keys": 12,
+   "focus": 3,
+   "errors": 1,
+   "imports": 0,
+   "decision": 4,
+   "depth": 4
+  },
+  "preferred": "old",
+  "rationale": "Both responses catch all twelve planted issues, keep the Goldman Sachs benchmark out of their figures, withhold NPV/IRR/DSCR and set out a staged recourse-then-refinance capital path. B goes further: it calculates the 55% and 78% adviser cases without averaging them, notes where the double count might only be partial, separates high confidence on 'not financeable' from low confidence on 'fixable', and gives explicit lender thresholds. A also contains a stray 'Aquaverse' reference from outside the memo."
+ },
+ "real-estate-hospitality": {
+  "old": {
+   "must_pass": "8/8",
+   "failed": [],
+   "keys": 12,
+   "focus": 3,
+   "errors": 0,
+   "imports": 0,
+   "decision": 4,
+   "depth": 4
+  },
+  "new": {
+   "must_pass": "8/8",
+   "failed": [],
+   "keys": 12,
+   "focus": 3,
+   "errors": 0,
+   "imports": 0,
+   "decision": 5,
+   "depth": 4
+  },
+  "preferred": "new",
+  "rationale": "Both responses are accurate and traceable, pass every must-pass check, and correctly recalculate K1 and preserve the K4 adviser range rather than averaging it. B is slightly more useful for a decision: it gives a nuanced NO-GO-as-proposed verdict, explicitly withholds NPV and total revenue, spots the hotel-guest overlap with the tourist total, and assigns more concrete per-specialist tasks and gates, while A's only edge is explicitly labelling the L32 sponsor conclusion."
+ },
+ "ai-strategy": {
+  "old": {
+   "must_pass": "8/8",
+   "failed": [],
+   "keys": 12,
+   "focus": 2,
+   "errors": 1,
+   "imports": 0,
+   "decision": 4,
+   "depth": 4
+  },
+  "new": {
+   "must_pass": "8/8",
+   "failed": [],
+   "keys": 11,
+   "focus": 2,
+   "errors": 0,
+   "imports": 0,
+   "decision": 4,
+   "depth": 4
+  },
+  "preferred": "old",
+  "rationale": "Both responses handle the focus items K6 and K5 correctly, withhold NPV/IRR/DSCR and reject the Goldman Sachs benchmark. A goes further on payment-agent controls and the utility arithmetic. B is preferred narrowly because it covers all twelve planted issues, including the schedule (K12) and the conference revenue left out of the revenue build, while A misses K12; B's one slip, calling the 23-point adviser spread '15 points', does not change any conclusion."
+ },
+ "environmental-technologies": {
+  "old": {
+   "must_pass": "8/8",
+   "failed": [],
+   "keys": 11,
+   "focus": 1,
+   "errors": 0,
+   "imports": 0,
+   "decision": 4,
+   "depth": 4
+  },
+  "new": {
+   "must_pass": "8/8",
+   "failed": [],
+   "keys": 11,
+   "focus": 0,
+   "errors": 1,
+   "imports": 0,
+   "decision": 4,
+   "depth": 4
+  },
+  "preferred": "old",
+  "rationale": "Both responses find almost the same issues, label sponsor claims and reject the Goldman benchmark, but B gets the sequential-savings arithmetic wrong on its own focus item (USD 0.265m instead of 0.530m remaining), while A's overlap arithmetic and reasoning are correct. A also keeps the adviser disagreement open and tests both ends, and it makes the stronger point that a new build cannot have a 'current' baseline bill."
+ }
+}

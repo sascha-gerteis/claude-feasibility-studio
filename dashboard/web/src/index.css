@@ -30,3 +30,26 @@
 .prose-report table { @apply w-full text-sm border-collapse my-3 block overflow-x-auto; }
 .prose-report th { @apply text-left font-semibold bg-slate-50 border border-line px-2 py-1 align-top; }
 .prose-report td { @apply border border-line px-2 py-1 align-top; }
+
+/* ---------- Research office character motion (driven only by recorded status) ---------- */
+.office-anim .arm-l, .office-anim .arm-r, .office-anim .doc, .office-anim .eyes, .office-anim .head { transform-box: fill-box; transform-origin: center; }
+.pose-typing .arm-l { animation: studio-tap 0.42s ease-in-out infinite alternate; }
+.pose-typing .arm-r { animation: studio-tap 0.42s ease-in-out 0.21s infinite alternate; }
+.pose-typing .screen-scroll { animation: studio-scroll 4s linear infinite; }
+.pose-typing .cursor { animation: studio-blink 1s steps(1) infinite; }
+.pose-reviewing .doc { animation: studio-doc 4.5s ease-in-out infinite; }
+.pose-reviewing .eyes { animation: studio-scan 3s ease-in-out infinite; }
+.pose-reviewing .screen-scroll { animation: studio-scroll 7s linear infinite; }
+.pose-done .badge-done { transform-box: fill-box; transform-origin: center; animation: studio-pop 0.5s cubic-bezier(.2,1.6,.4,1) 1 both; }
+.pose-done .sparkles { animation: studio-sparkle 1.4s ease-out 0.2s 1 both; }
+@keyframes studio-tap { from { transform: translateY(0); } to { transform: translateY(-2.5px); } }
+@keyframes studio-scroll { from { transform: translateY(0); } to { transform: translateY(-36px); } }
+@keyframes studio-blink { 50% { opacity: 0; } }
+@keyframes studio-doc { 0%, 100% { transform: rotate(-1.5deg); } 50% { transform: rotate(1.5deg); } }
+@keyframes studio-scan { 0%, 100% { transform: translateX(-1.2px); } 50% { transform: translateX(1.2px); } }
+@keyframes studio-pop { from { transform: scale(0.2); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+@keyframes studio-sparkle { 0% { opacity: 0; transform: translateY(4px); } 40% { opacity: 1; } 100% { opacity: 0; transform: translateY(-6px); } }
+.status-dot-live { animation: studio-blink 2s steps(1) infinite; }
+@media (prefers-reduced-motion: reduce) {
+  .office-anim *, .office-anim, .status-dot-live { animation: none !important; transition: none !important; }
+}

@@ -61,7 +61,7 @@ export function ReportsPage() {
                       const l = label(d);
                       return (
                         <li key={d.path}>
-                          <button type="button" onClick={() => setParams({ doc: d.path })}
+                          <button type="button" onClick={() => setParams((p) => { p.set("doc", d.path); return p; })}
                             className={`w-full px-4 py-1.5 text-left text-[13px] hover:bg-slate-50 ${current === d.path ? "bg-blue-50" : ""}`}>
                             <span className="block truncate font-medium text-ink">{l.name}</span>
                             <span className="block truncate text-[11px] text-muted">{l.who ? `${l.who} · ` : ""}{fmtTime(d.updatedAt)}</span>

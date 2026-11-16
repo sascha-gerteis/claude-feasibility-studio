@@ -183,6 +183,11 @@ The Director reviews every workstream and may order additional challenges.
   `[stage:document-analysis|independent-research|cross-review|financial-validation|final-report|ic-decision]`.
 - `RUN_LOG.md` is generated from recorded events (`studio.py runlog --write`), not written by hand.
 - Agents must not edit `.studio/`, the hooks, or the recorder scripts.
+- A specialist's assessment counts as complete only when `findings.md`, `sources.csv`, `assumptions.csv` and `risks.csv`
+  exist AND `python3 scripts/studio/quality_gate.py <agent>` has passed. `findings.md` must open with
+  `**Preliminary verdict:** <GO|CONDITIONAL GO|DEFER|NO-GO> · **Confidence:** <HIGH|MODERATE|LOW>`, cite sources by
+  their register IDs (for example `[IB-S03]`), and use section headings that include: Executive summary, Key findings,
+  Risks, Why this could fail, Challenges to other agents, Limitations and evidence gaps, Decision gates.
 
 ---
 
